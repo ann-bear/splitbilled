@@ -138,6 +138,18 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
 
   let ry=cy+74;
 
+  if (d.isGroup && d.memberTotals) {
+    ctx.font="10px monospace";
+    let mx=PAD+16;
+    d.memberTotals.forEach((m,mi)=>{
+      ctx.fillStyle=col; const nameW=ctx.measureText(m.name+": ").width;
+      ctx.fillText(m.name+":",mx,ry+8); mx+=nameW;
+      ctx.fillStyle="#a7a9be"; const valTxt=fRp(m.total)+(mi<d.memberTotals.length-1?"   ":"");
+      ctx.fillText(valTxt,mx,ry+8); mx+=ctx.measureText(valTxt).width;
+    });
+    ry+=24;
+  }
+
   if (d.itemLines.length > 0) {
     ctx.font="bold 9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("ITEMS",PAD+16,ry); ry+=LH;
     d.itemLines.forEach(ln => {
@@ -209,6 +221,7 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
   const IH=22, LH=18;
   const d = personData;
   let cardH = 58 + 4 + 16;
+  if (d.isGroup && d.memberTotals) cardH += 24;
   if (d.itemLines.length > 0) {
     cardH += LH;
     d.itemLines.forEach(ln => { cardH += IH+6; if (ln.ownerLabel||ln.qty>1||ln.assigned>1) cardH+=16; });
@@ -506,7 +519,7 @@ export default function SplitBilled() {
         const found=myExtras.find(x=>x.name===ex.name);
         if (found) found.amt+=ex.amt; else myExtras.push({...ex});
       }));
-      units.push({p:{id:g.id,name:members.map(m=>m.p.name).join(" & ")},itemLines,mySubtotal:sum("mySubtotal"),myDiscount:sum("myDiscount"),myPpn:sum("myPpn"),myOngkir:sum("myOngkir"),myExtras,total:sum("total"),isGroup:true});
+      units.push({p:{id:g.id,name:members.map(m=>m.p.name).join(" & ")},itemLines,mySubtotal:sum("mySubtotal"),myDiscount:sum("myDiscount"),myPpn:sum("myPpn"),myOngkir:sum("myOngkir"),myExtras,total:sum("total"),isGroup:true,memberTotals:members.map(m=>({name:m.p.name,total:m.total}))});
     });
     perPersonData.forEach(d=>{ if (!groupedIds.has(d.p.id)) units.push(d); });
     return units;
@@ -911,7 +924,7 @@ export default function SplitBilled() {
 
           <div className="sl">🧾 Receipt per Person</div>
           <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:18}}>
-            {billing.map(({p,itemLines,mySubtotal,myDiscount,myPpn,myOngkir,myExtras,total},i)=>{
+            {billing.map(({p,itemLines,mySubtotal,myDiscount,myPpn,myOngkir,myExtras,total,isGroup,memberTotals},i)=>{
               const pct=result.grandTotal>0?(total/result.grandTotal)*100:0;
               const col=colorOf(i);
               const hasFees=myDiscount>0||myPpn>0||myOngkir>0||myExtras.length>0;
@@ -929,6 +942,15 @@ export default function SplitBilled() {
                       <div style={{fontSize:10,color:col+"99"}}>{Math.round(pct)}% of total</div>
                     </div>
                   </div>
+                  {isGroup && (
+                    <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:"8px 15px",background:"#0d0c1a",borderBottom:`1px solid ${col}20`}}>
+                      {memberTotals.map((m,mi)=>(
+                        <div key={mi} style={{fontSize:11,color:"#a7a9be"}}>
+                          <span style={{color:col}}>{m.name}</span>: {fRp(m.total)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div style={{height:3,background:"#252440"}}><div style={{width:`${pct}%`,height:"100%",background:col}}/></div>
                   <div style={{padding:"12px 15px"}}>
                     {itemLines.length>0 ? (<>
