@@ -145,16 +145,21 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
       ctx.font="13px sans-serif"; ctx.fillStyle="#c8c4ff"; ctx.fillText(lbl,PAD+16,ry+13);
       ctx.font="13px sans-serif"; ctx.fillStyle="#fffffe";
       ctx.textAlign="right"; ctx.fillText(fRp(ln.share),PAD+cW-14,ry+13); ctx.textAlign="left";
-      ry+=IH;
-      if (ln.qty>1||ln.assigned>1) {
-        let note="";
-        if (ln.qty>1) note+=`${fRp(ln.unitPrice)} × ${ln.qty}`;
-        if (ln.qty>1&&ln.assigned>1) note+=" ";
-        if (ln.assigned>1) note+=`÷ ${ln.assigned} people`;
-        ctx.font="10px monospace"; ctx.fillStyle="#3e3e5e";
-        ctx.textAlign="right"; ctx.fillText(note,PAD+cW-14,ry-2); ctx.textAlign="left";
-        ry+=13;
+      let rowH=IH;
+      const hasSub = ln.ownerLabel || ln.qty>1 || ln.assigned>1;
+      if (hasSub) {
+        if (ln.ownerLabel) { ctx.font="9px monospace"; ctx.fillStyle="#a29bfe"; ctx.fillText(ln.ownerLabel,PAD+16,ry+25); }
+        if (ln.qty>1||ln.assigned>1) {
+          let note="";
+          if (ln.qty>1) note+=`${fRp(ln.unitPrice)} × ${ln.qty}`;
+          if (ln.qty>1&&ln.assigned>1) note+=" ";
+          if (ln.assigned>1) note+=`÷ ${ln.assigned} people`;
+          ctx.font="10px monospace"; ctx.fillStyle="#3e3e5e";
+          ctx.textAlign="right"; ctx.fillText(note,PAD+cW-14,ry+25); ctx.textAlign="left";
+        }
+        rowH+=16;
       }
+      ry+=rowH+6;
     });
     ctx.strokeStyle=col+"22"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.moveTo(PAD+16,ry); ctx.lineTo(PAD+cW-16,ry); ctx.stroke(); ctx.setLineDash([]); ry+=8;
@@ -168,7 +173,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
 
   const hasFees=d.myDiscount>0||d.myPpn>0||d.myOngkir>0||d.myExtras.length>0;
   if (hasFees) {
-    ctx.font="bold 9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("ADDITIONAL CHARGES",PAD+16,ry); ry+=LH+4;
+    ctx.font="bold 9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("ADDITIONAL CHARGES",PAD+16,ry); ry+=LH;
     const drawFee=(label,amt,fcol,badge)=>{
       ctx.font="12px sans-serif"; ctx.fillStyle="#a7a9be"; ctx.fillText(label,PAD+16,ry+12);
       if (badge) {
@@ -206,7 +211,7 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
   let cardH = 58 + 4 + 16;
   if (d.itemLines.length > 0) {
     cardH += LH;
-    d.itemLines.forEach(ln => { cardH += IH; if (ln.qty>1||ln.assigned>1) cardH+=13; });
+    d.itemLines.forEach(ln => { cardH += IH+6; if (ln.ownerLabel||ln.qty>1||ln.assigned>1) cardH+=16; });
     cardH += IH + 10;
   } else { cardH += IH; }
   const hasFees = d.myDiscount>0||d.myPpn>0||d.myOngkir>0||d.myExtras.length>0;
@@ -219,7 +224,7 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
   }
   cardH += 42 + 18;
 
-  const breakdownH = gbRows.length * 22 + 44;
+  const breakdownH = gbRows.length * 22 + 14;
   const HEADER_H = 5 + 70 + 88 + breakdownH + 28 + (title?16:0);
   const totalH = HEADER_H + cardH + 60;
 
@@ -237,11 +242,7 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
     ctx.textAlign="right"; ctx.fillStyle=col||"#fffffe"; ctx.fillText(val,W-PAD,cy);
     ctx.textAlign="left"; cy+=22;
   });
-  ctx.strokeStyle="#252440"; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(PAD,cy); ctx.lineTo(W-PAD,cy); ctx.stroke(); cy+=10;
-  ctx.font="bold 13px sans-serif"; ctx.fillStyle="#fffffe"; ctx.fillText("Total",PAD,cy+13);
-  ctx.textAlign="right"; ctx.fillStyle="#FF6B6B"; ctx.fillText(fRp(result.grandTotal),W-PAD,cy+13);
-  ctx.textAlign="left"; cy+=34;
+  cy+=14;
 
   // Section label
   ctx.font="10px monospace"; ctx.fillStyle="#4a4a6a";
@@ -463,7 +464,7 @@ export default function SplitBilled() {
       const assigned=Object.keys(item.assignedTo).filter(k=>item.assignedTo[k]);
       const qty=parseInt(item.qty)||1, unitPrice=parseFloat(item.price)||0;
       const share=(unitPrice*qty)/assigned.length; mySubtotal+=share;
-      return{name:item.name||"Item",qty,unitPrice,assigned:assigned.length,share};
+      return{itemId:item.id,name:item.name||"Item",qty,unitPrice,assigned:assigned.length,share};
     });
     let myDiscount=0;
     if (discount.enabled&&result.discountAmt>0) myDiscount=discount.mode==="per_item"?(result.subtotal>0?mySubtotal/result.subtotal*result.discountAmt:result.discountAmt/people.length):result.discountAmt/people.length;
@@ -495,9 +496,11 @@ export default function SplitBilled() {
       const sum=(key)=>members.reduce((s,m)=>s+m[key],0);
       const itemLines=[];
       members.forEach(m=>m.itemLines.forEach(ln=>{
-        const ex=itemLines.find(x=>x.name===ln.name&&x.unitPrice===ln.unitPrice&&x.qty===ln.qty&&x.assigned===ln.assigned);
-        if (ex) ex.share+=ln.share; else itemLines.push({...ln});
+        const ex=itemLines.find(x=>x.itemId===ln.itemId);
+        if (ex) { ex.share+=ln.share; ex.owners.push(m.p.name); }
+        else itemLines.push({...ln,owners:[m.p.name]});
       }));
+      itemLines.forEach(ln=>{ ln.ownerLabel = ln.owners.length<members.length ? ln.owners.join(" & ") : null; });
       const myExtras=[];
       members.forEach(m=>m.myExtras.forEach(ex=>{
         const found=myExtras.find(x=>x.name===ex.name);
@@ -934,8 +937,9 @@ export default function SplitBilled() {
                         <div key={li} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
                           <div style={{flex:1,minWidth:0}}>
                             <span style={{fontSize:13,color:"#c8c4ff"}}>{ln.name}</span>
+                            {ln.ownerLabel && <span style={{fontSize:10,color:"#a29bfe",marginLeft:6,background:"#a29bfe14",padding:"1px 6px",borderRadius:99}}>{ln.ownerLabel}</span>}
                             {(ln.qty>1||ln.assigned>1) && (
-                              <div style={{fontSize:10,color:"#3a3a5a",marginTop:1}}>
+                              <div style={{fontSize:10,color:"#3a3a5a",marginTop:2}}>
                                 {ln.qty>1?`${fRp(ln.unitPrice)} × ${ln.qty}`:""}{ln.qty>1&&ln.assigned>1?" ":""}{ln.assigned>1?`÷ ${ln.assigned} people`:""}
                               </div>
                             )}
