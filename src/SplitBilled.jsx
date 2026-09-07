@@ -98,11 +98,11 @@ function drawHeader(ctx, W, PAD, dateStr, grandTotal, peopleCount, title) {
   const gY=80+shift;
   ctx.fillStyle="#1a1929"; rr(ctx,PAD,gY,W-PAD*2,76,12); ctx.fill();
   ctx.strokeStyle="#2d2d48"; ctx.lineWidth=1.5; rr(ctx,PAD,gY,W-PAD*2,76,12); ctx.stroke();
-  ctx.font="10px monospace"; ctx.fillStyle="#6a6a8a"; ctx.fillText("GRAND TOTAL",PAD+18,gY+20);
-  ctx.font="bold 26px sans-serif"; ctx.fillStyle="#FF6B6B"; ctx.fillText(fRp(grandTotal),PAD+18,gY+56);
+  ctx.font="10px monospace"; ctx.fillStyle="#6a6a8a"; ctx.fillText("GRAND TOTAL",PAD+16,gY+20);
+  ctx.font="bold 26px sans-serif"; ctx.fillStyle="#FF6B6B"; ctx.fillText(fRp(grandTotal),PAD+16,gY+56);
   ctx.font="11px monospace"; ctx.fillStyle="#6a6a8a";
-  ctx.textAlign="right"; ctx.fillText(`${peopleCount} people`,W-PAD-18,gY+44); ctx.textAlign="left";
-  return gY + 88; // return next Y
+  ctx.textAlign="right"; ctx.fillText(`${peopleCount} people`,W-PAD-16,gY+44); ctx.textAlign="left";
+  return gY + 104; // return next Y (extra breathing room before breakdown rows)
 }
 
 function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
@@ -120,14 +120,14 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
   ctx.fillStyle=col+"10"; ctx.fillRect(PAD,cy+40,cW,12);
 
   // avatar
-  ctx.fillStyle=col+"22"; ctx.beginPath(); ctx.arc(PAD+22,cy+26,13,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(PAD+22,cy+26,13,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle=col+"22"; ctx.beginPath(); ctx.arc(PAD+29,cy+26,13,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(PAD+29,cy+26,13,0,Math.PI*2); ctx.stroke();
   ctx.font="bold 13px sans-serif"; ctx.fillStyle=col;
-  ctx.textAlign="center"; ctx.fillText(d.p.name.charAt(0).toUpperCase(),PAD+22,cy+31); ctx.textAlign="left";
+  ctx.textAlign="center"; ctx.fillText(d.p.name.charAt(0).toUpperCase(),PAD+29,cy+31); ctx.textAlign="left";
 
-  ctx.font="bold 15px sans-serif"; ctx.fillStyle="#fffffe"; ctx.fillText(d.p.name,PAD+44,cy+22);
+  ctx.font="bold 15px sans-serif"; ctx.fillStyle="#fffffe"; ctx.fillText(d.p.name,PAD+51,cy+22);
   const pct=result.grandTotal>0?Math.round(d.total/result.grandTotal*100):0;
-  ctx.font="10px monospace"; ctx.fillStyle=col+"99"; ctx.fillText(`${pct}% of total`,PAD+44,cy+38);
+  ctx.font="10px monospace"; ctx.fillStyle=col+"99"; ctx.fillText(`${pct}% of total`,PAD+51,cy+38);
   ctx.font="bold 17px sans-serif"; ctx.fillStyle=col;
   ctx.textAlign="right"; ctx.fillText(fRp(d.total),PAD+cW-16,cy+30); ctx.textAlign="left";
 
@@ -139,15 +139,16 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
   let ry=cy+74;
 
   if (d.isGroup && d.memberTotals) {
-    ctx.font="10px monospace";
-    let mx=PAD+16;
-    d.memberTotals.forEach((m,mi)=>{
-      ctx.fillStyle=col; const nameW=ctx.measureText(m.name+": ").width;
-      ctx.fillText(m.name+":",mx,ry+8); mx+=nameW;
-      ctx.fillStyle="#a7a9be"; const valTxt=fRp(m.total)+(mi<d.memberTotals.length-1?"   ":"");
-      ctx.fillText(valTxt,mx,ry+8); mx+=ctx.measureText(valTxt).width;
+    const boxY=ry, boxH=d.memberTotals.length*17+14;
+    ctx.fillStyle="#0d0c1a"; rr(ctx,PAD+12,boxY,cW-24,boxH,8); ctx.fill();
+    ctx.font="9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("EACH OWES",PAD+20,boxY+15);
+    let iy=boxY+15;
+    d.memberTotals.forEach((m)=>{
+      iy+=17;
+      ctx.font="11px monospace"; ctx.fillStyle=col; ctx.fillText(m.name,PAD+20,iy);
+      ctx.textAlign="right"; ctx.fillStyle="#a7a9be"; ctx.fillText(fRp(m.total),PAD+cW-20,iy); ctx.textAlign="left";
     });
-    ry+=24;
+    ry=boxY+boxH+14;
   }
 
   if (d.itemLines.length > 0) {
@@ -156,7 +157,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
       let lbl=ln.name.length>30?ln.name.slice(0,28)+"...":ln.name;
       ctx.font="13px sans-serif"; ctx.fillStyle="#c8c4ff"; ctx.fillText(lbl,PAD+16,ry+13);
       ctx.font="13px sans-serif"; ctx.fillStyle="#fffffe";
-      ctx.textAlign="right"; ctx.fillText(fRp(ln.share),PAD+cW-14,ry+13); ctx.textAlign="left";
+      ctx.textAlign="right"; ctx.fillText(fRp(ln.share),PAD+cW-16,ry+13); ctx.textAlign="left";
       let rowH=IH;
       const hasSub = ln.ownerLabel || ln.qty>1 || ln.assigned>1;
       if (hasSub) {
@@ -167,7 +168,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
           if (ln.qty>1&&ln.assigned>1) note+=" ";
           if (ln.assigned>1) note+=`÷ ${ln.assigned} people`;
           ctx.font="10px monospace"; ctx.fillStyle="#3e3e5e";
-          ctx.textAlign="right"; ctx.fillText(note,PAD+cW-14,ry+25); ctx.textAlign="left";
+          ctx.textAlign="right"; ctx.fillText(note,PAD+cW-16,ry+25); ctx.textAlign="left";
         }
         rowH+=16;
       }
@@ -176,7 +177,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
     ctx.strokeStyle=col+"22"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.moveTo(PAD+16,ry); ctx.lineTo(PAD+cW-16,ry); ctx.stroke(); ctx.setLineDash([]); ry+=8;
     ctx.font="11px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("Subtotal",PAD+16,ry+12);
-    ctx.textAlign="right"; ctx.fillStyle="#a7a9be"; ctx.fillText(fRp(d.mySubtotal),PAD+cW-14,ry+12); ctx.textAlign="left";
+    ctx.textAlign="right"; ctx.fillStyle="#a7a9be"; ctx.fillText(fRp(d.mySubtotal),PAD+cW-16,ry+12); ctx.textAlign="left";
     ry+=IH+10;
   } else {
     ctx.font="11px monospace"; ctx.fillStyle="#2a2a42";
@@ -194,7 +195,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
         ctx.font="9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText(badge,bx+5,ry+11);
       }
       ctx.font="12px sans-serif"; ctx.fillStyle=fcol||"#a7a9be";
-      ctx.textAlign="right"; ctx.fillText(fcol?`-${fRp(amt)}`:fRp(amt),PAD+cW-14,ry+12); ctx.textAlign="left"; ry+=IH;
+      ctx.textAlign="right"; ctx.fillText(fcol?`-${fRp(amt)}`:fRp(amt),PAD+cW-16,ry+12); ctx.textAlign="left"; ry+=IH;
     };
     if (d.myDiscount>0) drawFee("Discount",d.myDiscount,"#00b894");
     if (d.myPpn>0) drawFee("Tax",d.myPpn,null,ppn.mode==="per_item"?"prop.":"equal");
@@ -207,7 +208,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
   ctx.beginPath(); ctx.moveTo(PAD+12,ry); ctx.lineTo(PAD+cW-12,ry); ctx.stroke(); ry+=12;
   ctx.font="bold 14px sans-serif"; ctx.fillStyle="#fffffe"; ctx.fillText("Total Amount Due",PAD+16,ry+15);
   ctx.font="bold 18px sans-serif"; ctx.fillStyle=col;
-  ctx.textAlign="right"; ctx.fillText(fRp(d.total),PAD+cW-14,ry+15); ctx.textAlign="left";
+  ctx.textAlign="right"; ctx.fillText(fRp(d.total),PAD+cW-16,ry+15); ctx.textAlign="left";
   ry+=30;
 
   return ry - cy; // card height
@@ -221,7 +222,7 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
   const IH=22, LH=18;
   const d = personData;
   let cardH = 58 + 4 + 16;
-  if (d.isGroup && d.memberTotals) cardH += 24;
+  if (d.isGroup && d.memberTotals) cardH += d.memberTotals.length*17+14+14;
   if (d.itemLines.length > 0) {
     cardH += LH;
     d.itemLines.forEach(ln => { cardH += IH+6; if (ln.ownerLabel||ln.qty>1||ln.assigned>1) cardH+=16; });
@@ -238,7 +239,7 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
   cardH += 42 + 18;
 
   const breakdownH = gbRows.length * 22 + 14;
-  const HEADER_H = 5 + 70 + 88 + breakdownH + 28 + (title?16:0);
+  const HEADER_H = 5 + 70 + 104 + breakdownH + 28 + (title?16:0);
   const totalH = HEADER_H + cardH + 60;
 
   const canvas = document.createElement("canvas");
