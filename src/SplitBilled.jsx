@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const COLORS = ["#FF6B6B","#4ECDC4","#FFE66D","#A8E6CF","#FF8B94","#A29BFE","#FD79A8","#00B894","#FDCB6E","#74B9FF"];
+const COLORS = ["#111111","#3f3f3f","#6b6b6b","#707070","#232323","#565656","#111111","#3f3f3f","#6b6b6b","#707070"];
 let _id = 1;
 const uid = () => _id++;
 const fRp = (n) => "Rp " + Math.round(n).toLocaleString("id-ID");
@@ -72,35 +72,31 @@ function rr(ctx, x, y, w, h, r) {
 }
 
 function drawBg(ctx, W, totalH) {
-  const bg = ctx.createLinearGradient(0,0,0,totalH);
-  bg.addColorStop(0,"#0d0c1a"); bg.addColorStop(1,"#111020");
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,totalH);
-  ctx.save(); ctx.globalAlpha=0.05;
-  ctx.fillStyle="#FF6B6B"; ctx.beginPath(); ctx.arc(W-50,70,110,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle="#A29BFE"; ctx.beginPath(); ctx.arc(50,totalH-70,90,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#f5f5f2"; ctx.fillRect(0,0,W,totalH);
+  ctx.save(); ctx.globalAlpha=0.03;
+  ctx.fillStyle="#111111"; ctx.beginPath(); ctx.arc(W-50,70,110,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#111111"; ctx.beginPath(); ctx.arc(50,totalH-70,90,0,Math.PI*2); ctx.fill();
   ctx.restore();
-  const bar=ctx.createLinearGradient(0,0,W,0);
-  bar.addColorStop(0,"#FF6B6B"); bar.addColorStop(1,"#ff8e53");
-  ctx.fillStyle=bar; ctx.fillRect(0,0,W,5);
+  ctx.fillStyle="#111111"; ctx.fillRect(0,0,W,5);
 }
 
 function drawHeader(ctx, W, PAD, dateStr, grandTotal, peopleCount, title) {
-  ctx.font="bold 24px sans-serif"; ctx.fillStyle="#fffffe";
+  ctx.font="bold 24px sans-serif"; ctx.fillStyle="#111111";
   ctx.fillText("Split",PAD,50);
-  ctx.fillStyle="#FF6B6B";
+  ctx.fillStyle="#111111";
   ctx.fillText("Billed",PAD+ctx.measureText("Split ").width-2,50);
   const shift = title ? 16 : 0;
-  if (title) { ctx.font="bold 13px sans-serif"; ctx.fillStyle="#c8c4ff"; ctx.fillText(title, PAD, 66); }
-  ctx.font="11px monospace"; ctx.fillStyle="#4a4a6a";
+  if (title) { ctx.font="bold 13px sans-serif"; ctx.fillStyle="#1a1a1a"; ctx.fillText(title, PAD, 66); }
+  ctx.font="11px monospace"; ctx.fillStyle="#8a8a86";
   const dateDisplay = dateStr ? fmtDate(dateStr) : new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
   ctx.fillText(dateDisplay, PAD, 68+shift);
 
   const gY=80+shift;
-  ctx.fillStyle="#1a1929"; rr(ctx,PAD,gY,W-PAD*2,76,12); ctx.fill();
-  ctx.strokeStyle="#2d2d48"; ctx.lineWidth=1.5; rr(ctx,PAD,gY,W-PAD*2,76,12); ctx.stroke();
-  ctx.font="10px monospace"; ctx.fillStyle="#6a6a8a"; ctx.fillText("GRAND TOTAL",PAD+16,gY+20);
-  ctx.font="bold 26px sans-serif"; ctx.fillStyle="#FF6B6B"; ctx.fillText(fRp(grandTotal),PAD+16,gY+56);
-  ctx.font="11px monospace"; ctx.fillStyle="#6a6a8a";
+  ctx.fillStyle="#f0f0ed"; rr(ctx,PAD,gY,W-PAD*2,76,12); ctx.fill();
+  ctx.strokeStyle="#111111"; ctx.lineWidth=1.5; rr(ctx,PAD,gY,W-PAD*2,76,12); ctx.stroke();
+  ctx.font="10px monospace"; ctx.fillStyle="#767672"; ctx.fillText("GRAND TOTAL",PAD+16,gY+20);
+  ctx.font="bold 26px sans-serif"; ctx.fillStyle="#111111"; ctx.fillText(fRp(grandTotal),PAD+16,gY+56);
+  ctx.font="11px monospace"; ctx.fillStyle="#767672";
   ctx.textAlign="right"; ctx.fillText(`${peopleCount} people`,W-PAD-16,gY+44); ctx.textAlign="left";
   return gY + 104; // return next Y (extra breathing room before breakdown rows)
 }
@@ -108,10 +104,10 @@ function drawHeader(ctx, W, PAD, dateStr, grandTotal, peopleCount, title) {
 function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
   const IH=22, LH=18, cW=W-PAD*2;
 
-  ctx.fillStyle="#161525"; rr(ctx,PAD,cy,cW,999,12); // placeholder, will be clipped
+  ctx.fillStyle="#ffffff"; rr(ctx,PAD,cy,cW,999,12); // placeholder, will be clipped
   // We'll draw card items and return final height
 
-  ctx.fillStyle="#161525"; 
+  ctx.fillStyle="#ffffff"; 
   // Draw card bg after we know height — skip for now, draw contents first then rect
   // Actually let's just draw contents and track ry
 
@@ -125,7 +121,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
   ctx.font="bold 13px sans-serif"; ctx.fillStyle=col;
   ctx.textAlign="center"; ctx.fillText(d.p.name.charAt(0).toUpperCase(),PAD+29,cy+31); ctx.textAlign="left";
 
-  ctx.font="bold 15px sans-serif"; ctx.fillStyle="#fffffe"; ctx.fillText(d.p.name,PAD+51,cy+22);
+  ctx.font="bold 15px sans-serif"; ctx.fillStyle="#111111"; ctx.fillText(d.p.name,PAD+51,cy+22);
   const pct=result.grandTotal>0?Math.round(d.total/result.grandTotal*100):0;
   ctx.font="10px monospace"; ctx.fillStyle=col+"99"; ctx.fillText(`${pct}% of total`,PAD+51,cy+38);
   ctx.font="bold 17px sans-serif"; ctx.fillStyle=col;
@@ -133,41 +129,41 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
 
   // progress bar
   const bY=cy+54, bW=cW-24;
-  ctx.fillStyle="#252440"; rr(ctx,PAD+12,bY,bW,4,2); ctx.fill();
+  ctx.fillStyle="#dcdcd8"; rr(ctx,PAD+12,bY,bW,4,2); ctx.fill();
   if (pct>0) { ctx.fillStyle=col; rr(ctx,PAD+12,bY,bW*(pct/100),4,2); ctx.fill(); }
 
   let ry=cy+74;
 
   if (d.isGroup && d.memberTotals) {
     const boxY=ry, boxH=d.memberTotals.length*17+14;
-    ctx.fillStyle="#0d0c1a"; rr(ctx,PAD+12,boxY,cW-24,boxH,8); ctx.fill();
-    ctx.font="9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("EACH OWES",PAD+20,boxY+15);
+    ctx.fillStyle="#f5f5f2"; rr(ctx,PAD+12,boxY,cW-24,boxH,8); ctx.fill();
+    ctx.font="9px monospace"; ctx.fillStyle="#8a8a86"; ctx.fillText("EACH OWES",PAD+20,boxY+15);
     let iy=boxY+15;
     d.memberTotals.forEach((m)=>{
       iy+=17;
       ctx.font="11px monospace"; ctx.fillStyle=col; ctx.fillText(m.name,PAD+20,iy);
-      ctx.textAlign="right"; ctx.fillStyle="#a7a9be"; ctx.fillText(fRp(m.total),PAD+cW-20,iy); ctx.textAlign="left";
+      ctx.textAlign="right"; ctx.fillStyle="#4a4a46"; ctx.fillText(fRp(m.total),PAD+cW-20,iy); ctx.textAlign="left";
     });
     ry=boxY+boxH+14;
   }
 
   if (d.itemLines.length > 0) {
-    ctx.font="bold 9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("ITEMS",PAD+16,ry); ry+=LH;
+    ctx.font="bold 9px monospace"; ctx.fillStyle="#8a8a86"; ctx.fillText("ITEMS",PAD+16,ry); ry+=LH;
     d.itemLines.forEach(ln => {
       let lbl=ln.name.length>30?ln.name.slice(0,28)+"...":ln.name;
-      ctx.font="13px sans-serif"; ctx.fillStyle="#c8c4ff"; ctx.fillText(lbl,PAD+16,ry+13);
-      ctx.font="13px sans-serif"; ctx.fillStyle="#fffffe";
+      ctx.font="13px sans-serif"; ctx.fillStyle="#1a1a1a"; ctx.fillText(lbl,PAD+16,ry+13);
+      ctx.font="13px sans-serif"; ctx.fillStyle="#111111";
       ctx.textAlign="right"; ctx.fillText(fRp(ln.share),PAD+cW-16,ry+13); ctx.textAlign="left";
       let rowH=IH;
       const hasSub = ln.ownerLabel || ln.qty>1 || ln.assigned>1;
       if (hasSub) {
-        if (ln.ownerLabel) { ctx.font="9px monospace"; ctx.fillStyle="#a29bfe"; ctx.fillText(ln.ownerLabel,PAD+16,ry+25); }
+        if (ln.ownerLabel) { ctx.font="9px monospace"; ctx.fillStyle="#111111"; ctx.fillText(ln.ownerLabel,PAD+16,ry+25); }
         if (ln.qty>1||ln.assigned>1) {
           let note="";
           if (ln.qty>1) note+=`${fRp(ln.unitPrice)} × ${ln.qty}`;
           if (ln.qty>1&&ln.assigned>1) note+=" ";
           if (ln.assigned>1) note+=`÷ ${ln.assigned} people`;
-          ctx.font="10px monospace"; ctx.fillStyle="#3e3e5e";
+          ctx.font="10px monospace"; ctx.fillStyle="#9a9a96";
           ctx.textAlign="right"; ctx.fillText(note,PAD+cW-16,ry+25); ctx.textAlign="left";
         }
         rowH+=16;
@@ -176,28 +172,28 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
     });
     ctx.strokeStyle=col+"22"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.moveTo(PAD+16,ry); ctx.lineTo(PAD+cW-16,ry); ctx.stroke(); ctx.setLineDash([]); ry+=8;
-    ctx.font="11px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("Subtotal",PAD+16,ry+12);
-    ctx.textAlign="right"; ctx.fillStyle="#a7a9be"; ctx.fillText(fRp(d.mySubtotal),PAD+cW-16,ry+12); ctx.textAlign="left";
+    ctx.font="11px monospace"; ctx.fillStyle="#8a8a86"; ctx.fillText("Subtotal",PAD+16,ry+12);
+    ctx.textAlign="right"; ctx.fillStyle="#4a4a46"; ctx.fillText(fRp(d.mySubtotal),PAD+cW-16,ry+12); ctx.textAlign="left";
     ry+=IH+10;
   } else {
-    ctx.font="11px monospace"; ctx.fillStyle="#2a2a42";
+    ctx.font="11px monospace"; ctx.fillStyle="#c2c2be";
     ctx.textAlign="center"; ctx.fillText("-- no items --",PAD+cW/2,ry+12); ctx.textAlign="left"; ry+=IH;
   }
 
   const hasFees=d.myDiscount>0||d.myPpn>0||d.myOngkir>0||d.myExtras.length>0;
   if (hasFees) {
-    ctx.font="bold 9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText("ADDITIONAL CHARGES",PAD+16,ry); ry+=LH;
+    ctx.font="bold 9px monospace"; ctx.fillStyle="#8a8a86"; ctx.fillText("ADDITIONAL CHARGES",PAD+16,ry); ry+=LH;
     const drawFee=(label,amt,fcol,badge)=>{
-      ctx.font="12px sans-serif"; ctx.fillStyle="#a7a9be"; ctx.fillText(label,PAD+16,ry+12);
+      ctx.font="12px sans-serif"; ctx.fillStyle="#4a4a46"; ctx.fillText(label,PAD+16,ry+12);
       if (badge) {
         const bx=PAD+16+ctx.measureText(label+" ").width+2;
-        ctx.fillStyle="#252440"; rr(ctx,bx,ry+1,ctx.measureText(badge).width+10,13,3); ctx.fill();
-        ctx.font="9px monospace"; ctx.fillStyle="#4a4a6a"; ctx.fillText(badge,bx+5,ry+11);
+        ctx.fillStyle="#dcdcd8"; rr(ctx,bx,ry+1,ctx.measureText(badge).width+10,13,3); ctx.fill();
+        ctx.font="9px monospace"; ctx.fillStyle="#8a8a86"; ctx.fillText(badge,bx+5,ry+11);
       }
-      ctx.font="12px sans-serif"; ctx.fillStyle=fcol||"#a7a9be";
+      ctx.font="12px sans-serif"; ctx.fillStyle=fcol||"#4a4a46";
       ctx.textAlign="right"; ctx.fillText(fcol?`-${fRp(amt)}`:fRp(amt),PAD+cW-16,ry+12); ctx.textAlign="left"; ry+=IH;
     };
-    if (d.myDiscount>0) drawFee("Discount",d.myDiscount,"#00b894");
+    if (d.myDiscount>0) drawFee("Discount",d.myDiscount,"#111111");
     if (d.myPpn>0) drawFee("Tax",d.myPpn,null,ppn.mode==="per_item"?"prop.":"equal");
     if (d.myOngkir>0) drawFee("Delivery Fee",d.myOngkir,null,`/${people.length}`);
     d.myExtras.forEach(ex=>drawFee(ex.name,ex.amt,null,ex.mode==="per_item"?"prop.":"equal"));
@@ -206,7 +202,7 @@ function drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people) {
   ry+=4;
   ctx.strokeStyle=col+"44"; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(PAD+12,ry); ctx.lineTo(PAD+cW-12,ry); ctx.stroke(); ry+=12;
-  ctx.font="bold 14px sans-serif"; ctx.fillStyle="#fffffe"; ctx.fillText("Total Amount Due",PAD+16,ry+15);
+  ctx.font="bold 14px sans-serif"; ctx.fillStyle="#111111"; ctx.fillText("Total Amount Due",PAD+16,ry+15);
   ctx.font="bold 18px sans-serif"; ctx.fillStyle=col;
   ctx.textAlign="right"; ctx.fillText(fRp(d.total),PAD+cW-16,ry+15); ctx.textAlign="left";
   ry+=30;
@@ -252,26 +248,26 @@ function buildPersonCanvas(personData, personIndex, people, result, ppn, ongkir,
 
   // Breakdown summary
   gbRows.forEach(([label, val, col]) => {
-    ctx.font="12px monospace"; ctx.fillStyle="#6a6a8a"; ctx.fillText(label,PAD,cy);
-    ctx.textAlign="right"; ctx.fillStyle=col||"#fffffe"; ctx.fillText(val,W-PAD,cy);
+    ctx.font="12px monospace"; ctx.fillStyle="#767672"; ctx.fillText(label,PAD,cy);
+    ctx.textAlign="right"; ctx.fillStyle=col||"#111111"; ctx.fillText(val,W-PAD,cy);
     ctx.textAlign="left"; cy+=22;
   });
   cy+=14;
 
   // Section label
-  ctx.font="10px monospace"; ctx.fillStyle="#4a4a6a";
+  ctx.font="10px monospace"; ctx.fillStyle="#8a8a86";
   ctx.fillText(`RECEIPT — ${d.p.name.toUpperCase()}`,PAD,cy); cy+=20;
 
   // Card background
   const col = colorOf(personIndex);
   const cW = W-PAD*2;
-  ctx.fillStyle="#161525"; rr(ctx,PAD,cy,cW,cardH,12); ctx.fill();
+  ctx.fillStyle="#ffffff"; rr(ctx,PAD,cy,cW,cardH,12); ctx.fill();
   ctx.strokeStyle=col+"28"; ctx.lineWidth=1.5; rr(ctx,PAD,cy,cW,cardH,12); ctx.stroke();
 
   drawPersonCard(ctx, W, PAD, cy, d, col, result, ppn, ongkir, people);
 
   // Footer
-  ctx.font="10px monospace"; ctx.fillStyle="#2a2a40";
+  ctx.font="10px monospace"; ctx.fillStyle="#c2c2be";
   ctx.textAlign="center"; ctx.fillText("made by dotterspace",W/2,totalH-16); ctx.textAlign="left";
 
   return canvas;
@@ -328,12 +324,12 @@ function calculate({ people, items, ppn, ongkir, discount, extraFees }) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function UnitToggle({value,onChange}) {
   return (
-    <div style={{display:"flex",background:"#0d0c1a",borderRadius:7,padding:2,border:"1px solid #252440",flexShrink:0}}>
+    <div style={{display:"flex",background:"#f5f5f2",borderRadius:7,padding:2,border:"1px solid #dcdcd8",flexShrink:0}}>
       {["Rp","%"].map(u=>(
         <button key={u} onClick={()=>onChange(u==="%"?"pct":"rp")}
           style={{padding:"4px 10px",borderRadius:5,border:"none",fontSize:11,cursor:"pointer",fontFamily:"'DM Mono',monospace",
-          background:(u==="%")===(value==="pct")?"#ff6b6b":"transparent",
-          color:(u==="%")===(value==="pct")?"#fff":"#6a6a8a",transition:"all .15s"}}>{u}</button>
+          background:(u==="%")===(value==="pct")?"#111111":"transparent",
+          color:(u==="%")===(value==="pct")?"#fff":"#767672",transition:"all .15s"}}>{u}</button>
       ))}
     </div>
   );
@@ -344,8 +340,8 @@ function ModeToggle({value,onChange,labels=["Per Item","Equal Split"]}) {
     <div style={{display:"flex",gap:6,marginTop:8}}>
       {labels.map((l,li)=>{const modes=["per_item","rata"];const on=value===modes[li];return(
         <button key={l} onClick={()=>onChange(modes[li])}
-          style={{padding:"4px 12px",borderRadius:99,border:`1.5px solid ${on?"#a29bfe":"#252440"}`,
-          background:on?"#a29bfe1a":"transparent",color:on?"#c8c4ff":"#4a4a6a",fontSize:11,cursor:"pointer",fontFamily:"'DM Mono',monospace",transition:"all .15s"}}>
+          style={{padding:"4px 12px",borderRadius:99,border:`1.5px solid ${on?"#111111":"#dcdcd8"}`,
+          background:on?"#1111111a":"transparent",color:on?"#1a1a1a":"#8a8a86",fontSize:11,cursor:"pointer",fontFamily:"'DM Mono',monospace",transition:"all .15s"}}>
           {on?"✓ ":""}{l}</button>
       );})}
     </div>
@@ -353,7 +349,7 @@ function ModeToggle({value,onChange,labels=["Per Item","Equal Split"]}) {
 }
 
 // Compact reusable row for discount/tax/delivery/extra fee lines (per-person card)
-function FeeRow({icon,label,amt,badge,color="#a7a9be",badgeColor="#4a4a6a",badgeBg="#252440",negative}) {
+function FeeRow({icon,label,amt,badge,color="#4a4a46",badgeColor="#8a8a86",badgeBg="#dcdcd8",negative}) {
   return (
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:5,alignItems:"center"}}>
       <div style={{display:"flex",alignItems:"center",gap:5}}>
@@ -530,7 +526,7 @@ export default function SplitBilled() {
   const handleShare=()=>{
     const gbRows=[
       ["Item Subtotal",fRp(result.subtotal)],
-      discount.enabled&&result.discountAmt>0&&["Discount"+(discount.unit==="pct"?` (${discount.value}%)`:""),(("-"+fRp(result.discountAmt))),"#00b894"],
+      discount.enabled&&result.discountAmt>0&&["Discount"+(discount.unit==="pct"?` (${discount.value}%)`:""),(("-"+fRp(result.discountAmt))),"#111111"],
       ppn.enabled&&result.ppnTotal>0&&["Tax "+(ppn.unit==="rp"?fRp(ppn.rate):`${ppn.rate}%`)+(ppn.mode==="per_item"?" · proportional":" · equal"),fRp(result.ppnTotal)],
       ongkir.enabled&&result.ongkirAmt>0&&["Delivery Fee · equal split",fRp(result.ongkirAmt)],
       ...extraFees.map((f,fi)=>result.extraAmounts[fi]>0&&[(f.name||"Other Fee")+(f.unit==="pct"?` (${f.value}%)`:"")+( f.mode==="per_item"?" · proportional":" · equal"),fRp(result.extraAmounts[fi])]),
@@ -552,38 +548,38 @@ export default function SplitBilled() {
   };
 
   return (
-    <div style={{minHeight:"100vh",background:"#0d0c1a",fontFamily:"'DM Mono',monospace",color:"#fffffe"}}>
+    <div style={{minHeight:"100vh",background:"#f5f5f2",fontFamily:"'DM Mono',monospace",color:"#111111"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         input,button,textarea{font-family:inherit}
-        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#2d2d4e;border-radius:2px}
-        .tb{background:none;border:none;cursor:pointer;padding:10px 16px;font-size:13px;color:#4a4a6a;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
-        .tb.on{color:#ff6b6b;border-bottom-color:#ff6b6b}
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#d0d0cc;border-radius:2px}
+        .tb{background:none;border:none;cursor:pointer;padding:10px 16px;font-size:13px;color:#8a8a86;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+        .tb.on{color:#111111;border-bottom-color:#111111}
         .tag{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:99px;font-size:11px;cursor:pointer;border:1.5px solid;transition:all .15s;user-select:none}
         .tag.on{opacity:1}.tag.off{opacity:.28}.tag:hover{opacity:.7}
-        .ifield{background:#161525;border:1.5px solid #252440;border-radius:8px;color:#fffffe;padding:7px 11px;font-size:13px;outline:none;transition:border .15s;width:100%}
-        .ifield:focus{border-color:#ff6b6b55}
-        .ifield::placeholder{color:#333354}
-        .ifield[type="date"]{color-scheme:dark}
-        .card{background:#161525;border:1.5px solid #252440;border-radius:12px;padding:15px}
-        .sl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#4a4a6a;margin-bottom:9px}
+        .ifield{background:#ffffff;border:1.5px solid #dcdcd8;border-radius:8px;color:#111111;padding:7px 11px;font-size:13px;outline:none;transition:border .15s;width:100%}
+        .ifield:focus{border-color:#11111155}
+        .ifield::placeholder{color:#c2c2be}
+        .ifield[type="date"]{color-scheme:light}
+        .card{background:#ffffff;border:1.5px solid #dcdcd8;border-radius:12px;padding:15px}
+        .sl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#8a8a86;margin-bottom:9px}
         .toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
         .toggle input{opacity:0;width:0;height:0}
-        .knob{position:absolute;cursor:pointer;inset:0;background:#252440;border-radius:20px;transition:.25s}
-        .knob:before{content:"";position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:#6a6a8a;border-radius:50%;transition:.25s}
-        input:checked+.knob{background:#ff6b6b2a}
-        input:checked+.knob:before{transform:translateX(16px);background:#ff6b6b}
-        .ib{background:none;border:none;cursor:pointer;color:#3e3e5e;font-size:14px;padding:3px;transition:color .15s;flex-shrink:0}
-        .ib:hover{color:#ff6b6b}
+        .knob{position:absolute;cursor:pointer;inset:0;background:#dcdcd8;border-radius:20px;transition:.25s}
+        .knob:before{content:"";position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:#767672;border-radius:50%;transition:.25s}
+        input:checked+.knob{background:#1111112a}
+        input:checked+.knob:before{transform:translateX(16px);background:#111111}
+        .ib{background:none;border:none;cursor:pointer;color:#9a9a96;font-size:14px;padding:3px;transition:color .15s;flex-shrink:0}
+        .ib:hover{color:#111111}
         @keyframes spin{to{transform:rotate(360deg)}}
-        .spin{width:18px;height:18px;border:2px solid #6C5CE722;border-top-color:#a29bfe;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+        .spin{width:18px;height:18px;border:2px solid #11111122;border-top-color:#111111;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
         .overlay{position:fixed;inset:0;background:#060511ee;backdrop-filter:blur(14px);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-        .modal{background:#111020;border:1.5px solid #252440;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;max-height:96vh;overflow-y:auto}
-        .addbtn{background:#ff6b6b0d;border:1.5px dashed #ff6b6b33;border-radius:8px;color:#ff6b6b;padding:8px;cursor:pointer;font-size:12px;transition:all .15s;width:100%}
-        .addbtn:hover{background:#ff6b6b1a;border-color:#ff6b6b66}
+        .modal{background:#ffffff;border:1.5px solid #dcdcd8;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;max-height:96vh;overflow-y:auto}
+        .addbtn{background:#1111110d;border:1.5px dashed #11111133;border-radius:8px;color:#111111;padding:8px;cursor:pointer;font-size:12px;transition:all .15s;width:100%}
+        .addbtn:hover{background:#1111111a;border-color:#11111166}
         video{display:block;}
-        .share-img{width:100%;border-radius:12px;border:1.5px solid #252440;display:block;-webkit-touch-callout:default;user-select:none;-webkit-user-select:none}
+        .share-img{width:100%;border-radius:12px;border:1.5px solid #dcdcd8;display:block;-webkit-touch-callout:default;user-select:none;-webkit-user-select:none}
         .tags-wrap{display:flex;flex-wrap:wrap;gap:5px}
       `}</style>
 
@@ -608,7 +604,7 @@ export default function SplitBilled() {
               <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"20px 20px 40px",display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
                 <span style={{fontSize:11,color:"rgba(255,255,255,0.5)",textAlign:"center"}}>Point the camera at the entire receipt, then tap Scan.</span>
                 <button onClick={captureAndScan}
-                  style={{width:"100%",maxWidth:360,padding:"16px",background:"#fff",border:"none",borderRadius:14,color:"#0d0c1a",fontSize:16,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 24px rgba(0,0,0,.4)"}}>
+                  style={{width:"100%",maxWidth:360,padding:"16px",background:"#fff",border:"none",borderRadius:14,color:"#111111",fontSize:16,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 24px rgba(0,0,0,.4)"}}>
                   <span style={{fontSize:22}}>📸</span> Scan Now
                 </button>
               </div>
@@ -619,9 +615,9 @@ export default function SplitBilled() {
             <>
               {capturedImg && <img src={capturedImg} alt="captured" style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}} />}
               <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"20px 20px 40px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",background:"rgba(108,92,231,0.15)",border:"1px solid #6C5CE755",borderRadius:12,backdropFilter:"blur(10px)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",background:"rgba(108,92,231,0.15)",border:"1px solid #11111155",borderRadius:12,backdropFilter:"blur(10px)"}}>
                   <div className="spin"/>
-                  <span style={{fontSize:13,color:"#a29bfe"}}>AI is reading your receipt...</span>
+                  <span style={{fontSize:13,color:"#111111"}}>AI is reading your receipt...</span>
                 </div>
               </div>
             </>
@@ -631,11 +627,11 @@ export default function SplitBilled() {
             <>
               {capturedImg && <img src={capturedImg} alt="captured" style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}} />}
               <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"20px 20px 40px",display:"flex",flexDirection:"column",gap:10}}>
-                <div style={{padding:"13px 16px",background:"rgba(0,184,148,0.12)",border:"1px solid #00b89455",borderRadius:12,backdropFilter:"blur(10px)",fontSize:12,color:"#00b894",lineHeight:1.6}}>
+                <div style={{padding:"13px 16px",background:"rgba(0,184,148,0.12)",border:"1px solid #11111155",borderRadius:12,backdropFilter:"blur(10px)",fontSize:12,color:"#111111",lineHeight:1.6}}>
                   ✅ Success! Items and charges have been filled in automatically. Please assign each item to the relevant person.
                 </div>
                 <button onClick={closeScan}
-                  style={{width:"100%",padding:"14px",background:"#ff6b6b",border:"none",borderRadius:12,color:"#fff",fontSize:15,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer"}}>
+                  style={{width:"100%",padding:"14px",background:"#111111",border:"none",borderRadius:12,color:"#fff",fontSize:15,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer"}}>
                   Continue →
                 </button>
               </div>
@@ -644,15 +640,15 @@ export default function SplitBilled() {
 
           {scanPhase==="error" && (
             <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"20px 20px 40px",gap:10}}>
-              <div style={{padding:"13px 16px",background:"rgba(255,107,107,0.1)",border:"1px solid #ff6b6b44",borderRadius:12,fontSize:12,color:"#ff8b8b",lineHeight:1.6}}>
+              <div style={{padding:"13px 16px",background:"rgba(255,107,107,0.1)",border:"1px solid #11111144",borderRadius:12,fontSize:12,color:"#333333",lineHeight:1.6}}>
                 ⚠️ {scanErr}
               </div>
               <button onClick={()=>{setCapturedImg(null);setShowScan(false);setTimeout(()=>setShowScan(true),100);}}
-                style={{width:"100%",padding:"13px",background:"#252440",border:"none",borderRadius:12,color:"#a7a9be",fontSize:13,cursor:"pointer"}}>
+                style={{width:"100%",padding:"13px",background:"#dcdcd8",border:"none",borderRadius:12,color:"#4a4a46",fontSize:13,cursor:"pointer"}}>
                 Try Again
               </button>
               <button onClick={closeScan}
-                style={{width:"100%",padding:"12px",background:"none",border:"1px solid #252440",borderRadius:12,color:"#6a6a8a",fontSize:13,cursor:"pointer"}}>
+                style={{width:"100%",padding:"12px",background:"none",border:"1px solid #dcdcd8",borderRadius:12,color:"#767672",fontSize:13,cursor:"pointer"}}>
                 Close
               </button>
             </div>
@@ -675,23 +671,23 @@ export default function SplitBilled() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <button onClick={()=>setSharePageIdx(i=>Math.max(0,i-1))}
                 disabled={sharePageIdx===0}
-                style={{padding:"6px 14px",background:"#161525",border:"1.5px solid #252440",borderRadius:8,color:sharePageIdx===0?"#333354":"#a7a9be",cursor:sharePageIdx===0?"default":"pointer",fontSize:13}}>
+                style={{padding:"6px 14px",background:"#ffffff",border:"1.5px solid #dcdcd8",borderRadius:8,color:sharePageIdx===0?"#c2c2be":"#4a4a46",cursor:sharePageIdx===0?"default":"pointer",fontSize:13}}>
                 ← Prev
               </button>
               <div style={{textAlign:"center"}}>
                 <div style={{fontSize:13,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,color:colorOf(sharePageIdx)}}>
                   {billing[sharePageIdx]?.p.name}
                 </div>
-                <div style={{fontSize:10,color:"#4a4a6a"}}>{sharePageIdx+1} of {sharePages.length}</div>
+                <div style={{fontSize:10,color:"#8a8a86"}}>{sharePageIdx+1} of {sharePages.length}</div>
               </div>
               <button onClick={()=>setSharePageIdx(i=>Math.min(sharePages.length-1,i+1))}
                 disabled={sharePageIdx===sharePages.length-1}
-                style={{padding:"6px 14px",background:"#161525",border:"1.5px solid #252440",borderRadius:8,color:sharePageIdx===sharePages.length-1?"#333354":"#a7a9be",cursor:sharePageIdx===sharePages.length-1?"default":"pointer",fontSize:13}}>
+                style={{padding:"6px 14px",background:"#ffffff",border:"1.5px solid #dcdcd8",borderRadius:8,color:sharePageIdx===sharePages.length-1?"#c2c2be":"#4a4a46",cursor:sharePageIdx===sharePages.length-1?"default":"pointer",fontSize:13}}>
                 Next →
               </button>
             </div>
 
-            <div style={{background:"#a29bfe14",border:"1px solid #a29bfe33",borderRadius:10,padding:"9px 13px",fontSize:11,color:"#a29bfe",marginBottom:12,lineHeight:1.7}}>
+            <div style={{background:"#11111114",border:"1px solid #11111133",borderRadius:10,padding:"9px 13px",fontSize:11,color:"#111111",marginBottom:12,lineHeight:1.7}}>
               📱 Mobile: press and hold image → <b>Save Image</b><br/>
               💻 Desktop: right-click image → <b>Save Image As</b>
             </div>
@@ -707,17 +703,17 @@ export default function SplitBilled() {
       )}
 
       {/* ── HEADER ── */}
-      <div style={{background:"#111020",borderBottom:"1px solid #252440",padding:"16px 18px 0"}}>
+      <div style={{background:"#ffffff",borderBottom:"1px solid #dcdcd8",padding:"16px 18px 0"}}>
         <div style={{maxWidth:520,margin:"0 auto"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <div style={{display:"flex",alignItems:"center",gap:9}}>
               <span style={{fontSize:22}}>🧾</span>
               <div>
                 <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:18,letterSpacing:"-0.02em"}}>Split</span>
-                <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:18,letterSpacing:"-0.02em",color:"#ff6b6b"}}>Billed</span>
+                <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:18,letterSpacing:"-0.02em",color:"#111111"}}>Billed</span>
               </div>
             </div>
-            <button onClick={()=>setShowScan(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 13px",background:"#6C5CE71a",border:"1.5px solid #6C5CE744",borderRadius:99,color:"#a29bfe",fontSize:12,cursor:"pointer"}}>
+            <button onClick={()=>setShowScan(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 13px",background:"#1111111a",border:"1.5px solid #11111144",borderRadius:99,color:"#111111",fontSize:12,cursor:"pointer"}}>
               📷 Scan Receipt
             </button>
           </div>
@@ -738,12 +734,12 @@ export default function SplitBilled() {
               <span style={{fontSize:16}}>📝</span>
               <input className="ifield" placeholder="Bill title, e.g. Dinner at Sushi Tei" value={title} onChange={e=>setTitle(e.target.value)} style={{flex:1}} />
             </div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,borderTop:"1px solid #252440",paddingTop:12}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,borderTop:"1px solid #dcdcd8",paddingTop:12}}>
               <div>
                 <div style={{fontSize:13,fontWeight:500}}>📅 Date</div>
-                <div style={{fontSize:10,color:"#4a4a6a",marginTop:1}}>Date of the bill</div>
+                <div style={{fontSize:10,color:"#8a8a86",marginTop:1}}>Date of the bill</div>
               </div>
-              <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{background:"#0d0c1a",border:"1.5px solid #252440",borderRadius:8,color:"#fffffe",padding:"6px 10px",fontSize:12,outline:"none",fontFamily:"'DM Mono',monospace",colorScheme:"dark",flexShrink:0}} />
+              <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{background:"#f5f5f2",border:"1.5px solid #dcdcd8",borderRadius:8,color:"#111111",padding:"6px 10px",fontSize:12,outline:"none",fontFamily:"'DM Mono',monospace",colorScheme:"light",flexShrink:0}} />
             </div>
           </div>
 
@@ -752,23 +748,23 @@ export default function SplitBilled() {
             <div className="sl">👥 People</div>
             <div className="tags-wrap" style={{marginBottom:9}}>
               {people.map((p,i)=>(
-                <div key={p.id} style={{display:"flex",alignItems:"center",gap:3,background:"#161525",border:`1.5px solid ${colorOf(i)}2e`,borderRadius:99,padding:"3px 6px 3px 10px"}}>
+                <div key={p.id} style={{display:"flex",alignItems:"center",gap:3,background:"#ffffff",border:`1.5px solid ${colorOf(i)}2e`,borderRadius:99,padding:"3px 6px 3px 10px"}}>
                   <span style={{width:6,height:6,borderRadius:"50%",background:colorOf(i),display:"inline-block",flexShrink:0}}/>
                   <input value={p.name} onChange={e=>renamePerson(p.id,e.target.value)}
-                    style={{background:"none",border:"none",color:"#fffffe",fontSize:12,outline:"none",width:Math.max(40,p.name.length*7.8)}} />
+                    style={{background:"none",border:"none",color:"#111111",fontSize:12,outline:"none",width:Math.max(40,p.name.length*7.8)}} />
                   {people.length>1 && <button className="ib" onClick={()=>removePerson(p.id)} style={{fontSize:10}}>✕</button>}
                 </div>
               ))}
             </div>
             <div style={{display:"flex",gap:7,marginBottom:9}}>
               <input className="ifield" placeholder="Add person..." value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPerson()} />
-              <button onClick={addPerson} style={{background:"#ff6b6b",border:"none",borderRadius:8,color:"#fff",padding:"0 13px",cursor:"pointer",fontSize:16,flexShrink:0}}>+</button>
+              <button onClick={addPerson} style={{background:"#111111",border:"none",borderRadius:8,color:"#fff",padding:"0 13px",cursor:"pointer",fontSize:16,flexShrink:0}}>+</button>
             </div>
 
             {groups.length>0 && (
               <div className="tags-wrap" style={{marginBottom:9}}>
                 {groups.map(g=>(
-                  <div key={g.id} style={{display:"flex",alignItems:"center",gap:4,background:"#6C5CE71a",border:"1.5px solid #6C5CE755",borderRadius:99,padding:"3px 6px 3px 10px",fontSize:11,color:"#a29bfe"}}>
+                  <div key={g.id} style={{display:"flex",alignItems:"center",gap:4,background:"#1111111a",border:"1.5px solid #11111155",borderRadius:99,padding:"3px 6px 3px 10px",fontSize:11,color:"#111111"}}>
                     🔗 {g.memberIds.map(id=>people.find(p=>p.id===id)?.name).filter(Boolean).join(" + ")}
                     <button className="ib" onClick={()=>ungroup(g.id)} style={{fontSize:10}}>✕</button>
                   </div>
@@ -778,7 +774,7 @@ export default function SplitBilled() {
 
             {groupPicker ? (
               <div>
-                <div style={{fontSize:10,color:"#4a4a6a",marginBottom:6}}>Pilih 2+ orang yang pembayarannya digabung:</div>
+                <div style={{fontSize:10,color:"#8a8a86",marginBottom:6}}>Pilih 2+ orang yang pembayarannya digabung:</div>
                 <div className="tags-wrap" style={{marginBottom:8}}>
                   {people.map((p,i)=>{const sel=groupPicker.includes(p.id);return(
                     <span key={p.id} className={`tag ${sel?"on":"off"}`} style={{borderColor:colorOf(i),color:colorOf(i),background:sel?colorOf(i)+"18":"transparent"}} onClick={()=>toggleGroupPick(p.id)}>
@@ -786,14 +782,14 @@ export default function SplitBilled() {
                   );})}
                 </div>
                 <div style={{display:"flex",gap:7}}>
-                  <button onClick={confirmGroup} disabled={groupPicker.length<2} style={{flex:1,background:groupPicker.length<2?"#252440":"#6C5CE7",border:"none",borderRadius:8,color:"#fff",padding:"7px",fontSize:12,cursor:groupPicker.length<2?"default":"pointer"}}>
+                  <button onClick={confirmGroup} disabled={groupPicker.length<2} style={{flex:1,background:groupPicker.length<2?"#dcdcd8":"#111111",border:"none",borderRadius:8,color:groupPicker.length<2?"#8a8a86":"#fff",padding:"7px",fontSize:12,cursor:groupPicker.length<2?"default":"pointer"}}>
                     {groupPicker.length<2?"Pilih min. 2 orang":`Gabung ${groupPicker.length} orang`}
                   </button>
-                  <button onClick={()=>setGroupPicker(null)} style={{background:"#161525",border:"1.5px solid #252440",borderRadius:8,color:"#6a6a8a",padding:"7px 12px",fontSize:12,cursor:"pointer"}}>Batal</button>
+                  <button onClick={()=>setGroupPicker(null)} style={{background:"#ffffff",border:"1.5px solid #dcdcd8",borderRadius:8,color:"#767672",padding:"7px 12px",fontSize:12,cursor:"pointer"}}>Batal</button>
                 </div>
               </div>
             ) : (
-              people.length>1 && <button onClick={()=>setGroupPicker([])} style={{background:"none",border:"1px dashed #3a3a5a",borderRadius:8,color:"#6a6a8a",padding:"5px 10px",fontSize:11,cursor:"pointer"}}>🔗 Gabung pembayaran 2 orang+</button>
+              people.length>1 && <button onClick={()=>setGroupPicker([])} style={{background:"none",border:"1px dashed #b0b0ac",borderRadius:8,color:"#767672",padding:"5px 10px",fontSize:11,cursor:"pointer"}}>🔗 Gabung pembayaran 2 orang+</button>
             )}
           </div>
 
@@ -807,18 +803,18 @@ export default function SplitBilled() {
                     <input className="ifield" placeholder={`Item ${idx+1}...`} value={item.name} onChange={e=>updateItem(item.id,"name",e.target.value)} style={{flex:1}} />
                     <input className="ifield" placeholder="1" value={item.qty} onChange={e=>updateItem(item.id,"qty",e.target.value)} type="number" min="1" style={{width:48,textAlign:"center",padding:"7px 4px"}} />
                     <div style={{position:"relative",width:120}}>
-                      <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#4a4a6a",fontSize:11}}>Rp</span>
+                      <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",color:"#8a8a86",fontSize:11}}>Rp</span>
                       <input className="ifield" placeholder="0" value={item.price} onChange={e=>updateItem(item.id,"price",e.target.value)} type="number" style={{paddingLeft:26}} />
                     </div>
                     {items.length>1 && <button className="ib" onClick={()=>removeItem(item.id)}>🗑</button>}
                   </div>
-                  <div style={{fontSize:10,color:"#4a4a6a",marginBottom:5}}>Who ordered this?</div>
+                  <div style={{fontSize:10,color:"#8a8a86",marginBottom:5}}>Who ordered this?</div>
                   <div className="tags-wrap">
                     {people.map((p,pi)=>{const sel=!!item.assignedTo[p.id];return(
                       <span key={p.id} className={`tag ${sel?"on":"off"}`} style={{borderColor:colorOf(pi),color:colorOf(pi),background:sel?colorOf(pi)+"18":"transparent"}} onClick={()=>toggleAssign(item.id,p.id)}>
                         {sel?"✓ ":""}{p.name}</span>
                     );})}
-                    <span className="tag off" style={{borderColor:"#4a4a6a",color:"#4a4a6a"}} onClick={()=>assignAll(item.id)}>Everyone</span>
+                    <span className="tag off" style={{borderColor:"#8a8a86",color:"#8a8a86"}} onClick={()=>assignAll(item.id)}>Everyone</span>
                   </div>
                 </div>
               ))}
@@ -829,18 +825,18 @@ export default function SplitBilled() {
           {/* Tax */}
           <div className="card" style={{marginBottom:9}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontSize:13,fontWeight:500}}>🧾 Tax (PPN)</div><div style={{fontSize:10,color:"#4a4a6a"}}>Value Added Tax</div></div>
+              <div><div style={{fontSize:13,fontWeight:500}}>🧾 Tax (PPN)</div><div style={{fontSize:10,color:"#8a8a86"}}>Value Added Tax</div></div>
               <label className="toggle"><input type="checkbox" checked={ppn.enabled} onChange={e=>setPpn(x=>({...x,enabled:e.target.checked}))}/><span className="knob"/></label>
             </div>
             {ppn.enabled && (<>
               <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
                 <UnitToggle value={ppn.unit} onChange={v=>setPpn(x=>({...x,unit:v}))} />
                 {ppn.unit==="rp"
-                  ? <><span style={{fontSize:12,color:"#4a4a6a",flexShrink:0}}>Rp</span><input className="ifield" type="number" placeholder="0" value={ppn.rate} onChange={e=>setPpn(x=>({...x,rate:e.target.value}))} /></>
-                  : <><input className="ifield" type="number" value={ppn.rate} onChange={e=>setPpn(x=>({...x,rate:e.target.value}))} style={{width:72}} /><span style={{fontSize:12,color:"#4a4a6a"}}>% of subtotal</span></>
+                  ? <><span style={{fontSize:12,color:"#8a8a86",flexShrink:0}}>Rp</span><input className="ifield" type="number" placeholder="0" value={ppn.rate} onChange={e=>setPpn(x=>({...x,rate:e.target.value}))} /></>
+                  : <><input className="ifield" type="number" value={ppn.rate} onChange={e=>setPpn(x=>({...x,rate:e.target.value}))} style={{width:72}} /><span style={{fontSize:12,color:"#8a8a86"}}>% of subtotal</span></>
                 }
               </div>
-              <div style={{fontSize:10,color:"#4a4a6a",marginTop:10,marginBottom:2}}>Distribution method:</div>
+              <div style={{fontSize:10,color:"#8a8a86",marginTop:10,marginBottom:2}}>Distribution method:</div>
               <ModeToggle value={ppn.mode} onChange={v=>setPpn(x=>({...x,mode:v}))} labels={["Proportional","Equal Split"]} />
             </>)}
           </div>
@@ -848,12 +844,12 @@ export default function SplitBilled() {
           {/* Delivery */}
           <div className="card" style={{marginBottom:9}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontSize:13,fontWeight:500}}>🚚 Delivery Fee</div><div style={{fontSize:10,color:"#4a4a6a"}}>Split equally among all</div></div>
+              <div><div style={{fontSize:13,fontWeight:500}}>🚚 Delivery Fee</div><div style={{fontSize:10,color:"#8a8a86"}}>Split equally among all</div></div>
               <label className="toggle"><input type="checkbox" checked={ongkir.enabled} onChange={e=>setOngkir(x=>({...x,enabled:e.target.checked}))}/><span className="knob"/></label>
             </div>
             {ongkir.enabled && (
               <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
-                <span style={{fontSize:12,color:"#4a4a6a",flexShrink:0}}>Rp</span>
+                <span style={{fontSize:12,color:"#8a8a86",flexShrink:0}}>Rp</span>
                 <input className="ifield" type="number" placeholder="0" value={ongkir.amount} onChange={e=>setOngkir(x=>({...x,amount:e.target.value}))} />
               </div>
             )}
@@ -862,17 +858,17 @@ export default function SplitBilled() {
           {/* Discount */}
           <div className="card" style={{marginBottom:9}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontSize:13,fontWeight:500}}>🏷️ Discount</div><div style={{fontSize:10,color:"#4a4a6a"}}>Promo code / voucher</div></div>
+              <div><div style={{fontSize:13,fontWeight:500}}>🏷️ Discount</div><div style={{fontSize:10,color:"#8a8a86"}}>Promo code / voucher</div></div>
               <label className="toggle"><input type="checkbox" checked={discount.enabled} onChange={e=>setDiscount(x=>({...x,enabled:e.target.checked}))}/><span className="knob"/></label>
             </div>
             {discount.enabled && (<>
               <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
                 <UnitToggle value={discount.unit} onChange={v=>setDiscount(x=>({...x,unit:v}))} />
                 {discount.unit==="rp"
-                  ? <><span style={{fontSize:12,color:"#4a4a6a",flexShrink:0}}>Rp</span><input className="ifield" type="number" placeholder="0" value={discount.value} onChange={e=>setDiscount(x=>({...x,value:e.target.value}))} /></>
-                  : <><input className="ifield" type="number" placeholder="0" value={discount.value} onChange={e=>setDiscount(x=>({...x,value:e.target.value}))} style={{width:80}} /><span style={{fontSize:12,color:"#4a4a6a"}}>% of subtotal</span></>}
+                  ? <><span style={{fontSize:12,color:"#8a8a86",flexShrink:0}}>Rp</span><input className="ifield" type="number" placeholder="0" value={discount.value} onChange={e=>setDiscount(x=>({...x,value:e.target.value}))} /></>
+                  : <><input className="ifield" type="number" placeholder="0" value={discount.value} onChange={e=>setDiscount(x=>({...x,value:e.target.value}))} style={{width:80}} /><span style={{fontSize:12,color:"#8a8a86"}}>% of subtotal</span></>}
               </div>
-              <div style={{fontSize:10,color:"#4a4a6a",marginTop:10,marginBottom:2}}>Distribution method:</div>
+              <div style={{fontSize:10,color:"#8a8a86",marginTop:10,marginBottom:2}}>Distribution method:</div>
               <ModeToggle value={discount.mode} onChange={v=>setDiscount(x=>({...x,mode:v}))} labels={["Proportional","Equal Split"]} />
             </>)}
           </div>
@@ -880,11 +876,11 @@ export default function SplitBilled() {
           {/* Other Fees */}
           <div className="card" style={{marginBottom:22}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:extraFees.length?10:0}}>
-              <div><div style={{fontSize:13,fontWeight:500}}>➕ Other Charges</div><div style={{fontSize:10,color:"#4a4a6a"}}>Service charge, tips, packaging...</div></div>
-              <button onClick={addExtraFee} style={{background:"#ff6b6b0d",border:"1px solid #ff6b6b33",borderRadius:7,color:"#ff6b6b",padding:"4px 10px",cursor:"pointer",fontSize:11}}>+ Add</button>
+              <div><div style={{fontSize:13,fontWeight:500}}>➕ Other Charges</div><div style={{fontSize:10,color:"#8a8a86"}}>Service charge, tips, packaging...</div></div>
+              <button onClick={addExtraFee} style={{background:"#1111110d",border:"1px solid #11111133",borderRadius:7,color:"#111111",padding:"4px 10px",cursor:"pointer",fontSize:11}}>+ Add</button>
             </div>
             {extraFees.map(fee=>(
-              <div key={fee.id} style={{borderTop:"1px solid #252440",paddingTop:10,marginTop:10}}>
+              <div key={fee.id} style={{borderTop:"1px solid #dcdcd8",paddingTop:10,marginTop:10}}>
                 <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:7}}>
                   <input className="ifield" placeholder="Charge name..." value={fee.name} onChange={e=>updateFee(fee.id,"name",e.target.value)} style={{flex:1}} />
                   <button className="ib" onClick={()=>removeExtraFee(fee.id)}>🗑</button>
@@ -892,16 +888,16 @@ export default function SplitBilled() {
                 <div style={{display:"flex",gap:6,alignItems:"center"}}>
                   <UnitToggle value={fee.unit} onChange={v=>updateFee(fee.id,"unit",v)} />
                   {fee.unit==="rp"
-                    ? <><span style={{fontSize:12,color:"#4a4a6a",flexShrink:0}}>Rp</span><input className="ifield" type="number" placeholder="0" value={fee.value} onChange={e=>updateFee(fee.id,"value",e.target.value)} /></>
-                    : <><input className="ifield" type="number" placeholder="0" value={fee.value} onChange={e=>updateFee(fee.id,"value",e.target.value)} style={{width:72}} /><span style={{fontSize:12,color:"#4a4a6a"}}>% of subtotal</span></>}
+                    ? <><span style={{fontSize:12,color:"#8a8a86",flexShrink:0}}>Rp</span><input className="ifield" type="number" placeholder="0" value={fee.value} onChange={e=>updateFee(fee.id,"value",e.target.value)} /></>
+                    : <><input className="ifield" type="number" placeholder="0" value={fee.value} onChange={e=>updateFee(fee.id,"value",e.target.value)} style={{width:72}} /><span style={{fontSize:12,color:"#8a8a86"}}>% of subtotal</span></>}
                 </div>
-                <div style={{fontSize:10,color:"#4a4a6a",marginTop:8,marginBottom:2}}>Distribution method:</div>
+                <div style={{fontSize:10,color:"#8a8a86",marginTop:8,marginBottom:2}}>Distribution method:</div>
                 <ModeToggle value={fee.mode} onChange={v=>updateFee(fee.id,"mode",v)} labels={["Proportional","Equal Split"]} />
               </div>
             ))}
           </div>
 
-          <button onClick={()=>setActiveTab("result")} style={{width:"100%",padding:"13px",background:"#ff6b6b",border:"none",borderRadius:12,color:"#fff",fontSize:15,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif",cursor:"pointer",boxShadow:"0 0 30px #ff6b6b33"}}>
+          <button onClick={()=>setActiveTab("result")} style={{width:"100%",padding:"13px",background:"#111111",border:"none",borderRadius:12,color:"#fff",fontSize:15,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif",cursor:"pointer",boxShadow:"0 0 30px #11111133"}}>
             Calculate →
           </button>
         </>)}
@@ -910,12 +906,12 @@ export default function SplitBilled() {
         {activeTab==="result" && (<>
           {title && <div style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:18,marginBottom:6}}>{title}</div>}
           {date && (
-            <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",background:"#a29bfe14",border:"1px solid #a29bfe33",borderRadius:99,fontSize:11,color:"#a29bfe",marginBottom:14}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",background:"#11111114",border:"1px solid #11111133",borderRadius:99,fontSize:11,color:"#111111",marginBottom:14}}>
               📅 {fmtDate(date)}
             </div>
           )}
 
-          <div style={{background:"linear-gradient(135deg,#ff6b6b,#ff8e53)",borderRadius:16,padding:"18px 20px",marginBottom:18,position:"relative",overflow:"hidden"}}>
+          <div style={{background:"#111111",borderRadius:16,padding:"18px 20px",marginBottom:18,position:"relative",overflow:"hidden",color:"#fff"}}>
             <div style={{position:"absolute",top:-24,right:-24,width:88,height:88,background:"#ffffff14",borderRadius:"50%"}}/>
             <div style={{position:"absolute",bottom:-28,right:20,width:112,height:112,background:"#ffffff08",borderRadius:"50%"}}/>
             <div style={{fontSize:9,letterSpacing:".18em",textTransform:"uppercase",opacity:.75,marginBottom:2}}>Grand Total</div>
@@ -930,7 +926,7 @@ export default function SplitBilled() {
               const col=colorOf(i);
               const hasFees=myDiscount>0||myPpn>0||myOngkir>0||myExtras.length>0;
               return (
-                <div key={p.id} style={{background:"#161525",border:`1.5px solid ${col}28`,borderRadius:14,overflow:"hidden"}}>
+                <div key={p.id} style={{background:"#ffffff",border:`1.5px solid ${col}28`,borderRadius:14,overflow:"hidden"}}>
                   <div style={{background:`${col}10`,borderBottom:`1px solid ${col}20`,padding:"12px 15px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <div style={{width:28,height:28,borderRadius:"50%",background:`${col}22`,border:`2px solid ${col}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:col,fontFamily:"'Space Grotesk',sans-serif"}}>
@@ -944,42 +940,42 @@ export default function SplitBilled() {
                     </div>
                   </div>
                   {isGroup && (
-                    <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:"8px 15px",background:"#0d0c1a",borderBottom:`1px solid ${col}20`}}>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:8,padding:"8px 15px",background:"#f5f5f2",borderBottom:`1px solid ${col}20`}}>
                       {memberTotals.map((m,mi)=>(
-                        <div key={mi} style={{fontSize:11,color:"#a7a9be"}}>
+                        <div key={mi} style={{fontSize:11,color:"#4a4a46"}}>
                           <span style={{color:col}}>{m.name}</span>: {fRp(m.total)}
                         </div>
                       ))}
                     </div>
                   )}
-                  <div style={{height:3,background:"#252440"}}><div style={{width:`${pct}%`,height:"100%",background:col}}/></div>
+                  <div style={{height:3,background:"#dcdcd8"}}><div style={{width:`${pct}%`,height:"100%",background:col}}/></div>
                   <div style={{padding:"12px 15px"}}>
                     {itemLines.length>0 ? (<>
-                      <div style={{fontSize:10,color:"#4a4a6a",letterSpacing:".1em",textTransform:"uppercase",marginBottom:7}}>Items</div>
+                      <div style={{fontSize:10,color:"#8a8a86",letterSpacing:".1em",textTransform:"uppercase",marginBottom:7}}>Items</div>
                       {itemLines.map((ln,li)=>(
                         <div key={li} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
                           <div style={{flex:1,minWidth:0}}>
-                            <span style={{fontSize:13,color:"#c8c4ff"}}>{ln.name}</span>
-                            {ln.ownerLabel && <span style={{fontSize:10,color:"#a29bfe",marginLeft:6,background:"#a29bfe14",padding:"1px 6px",borderRadius:99}}>{ln.ownerLabel}</span>}
+                            <span style={{fontSize:13,color:"#1a1a1a"}}>{ln.name}</span>
+                            {ln.ownerLabel && <span style={{fontSize:10,color:"#111111",marginLeft:6,background:"#11111114",padding:"1px 6px",borderRadius:99}}>{ln.ownerLabel}</span>}
                             {(ln.qty>1||ln.assigned>1) && (
-                              <div style={{fontSize:10,color:"#3a3a5a",marginTop:2}}>
+                              <div style={{fontSize:10,color:"#b0b0ac",marginTop:2}}>
                                 {ln.qty>1?`${fRp(ln.unitPrice)} × ${ln.qty}`:""}{ln.qty>1&&ln.assigned>1?" ":""}{ln.assigned>1?`÷ ${ln.assigned} people`:""}
                               </div>
                             )}
                           </div>
-                          <span style={{fontSize:13,color:"#fffffe",marginLeft:10,flexShrink:0}}>{fRp(ln.share)}</span>
+                          <span style={{fontSize:13,color:"#111111",marginLeft:10,flexShrink:0}}>{fRp(ln.share)}</span>
                         </div>
                       ))}
                       <div style={{display:"flex",justifyContent:"space-between",borderTop:`1px dashed ${col}22`,paddingTop:7,marginTop:2,marginBottom:hasFees?12:0}}>
-                        <span style={{fontSize:11,color:"#4a4a6a"}}>Item subtotal</span>
-                        <span style={{fontSize:12,color:"#a7a9be"}}>{fRp(mySubtotal)}</span>
+                        <span style={{fontSize:11,color:"#8a8a86"}}>Item subtotal</span>
+                        <span style={{fontSize:12,color:"#4a4a46"}}>{fRp(mySubtotal)}</span>
                       </div>
                     </>) : (
-                      <div style={{fontSize:12,color:"#3a3a5a",textAlign:"center",padding:"8px 0",marginBottom:hasFees?10:0}}>— no items assigned —</div>
+                      <div style={{fontSize:12,color:"#b0b0ac",textAlign:"center",padding:"8px 0",marginBottom:hasFees?10:0}}>— no items assigned —</div>
                     )}
                     {hasFees && (<>
-                      <div style={{fontSize:10,color:"#4a4a6a",letterSpacing:".1em",textTransform:"uppercase",marginBottom:7}}>Additional Charges</div>
-                      {myDiscount>0 && <FeeRow icon="🏷️" label="Discount" amt={myDiscount} negative color="#00b894" badgeColor="#00b89455" badgeBg="#00b89410" badge={discount.mode==="per_item"?"proportional":"equal"} />}
+                      <div style={{fontSize:10,color:"#8a8a86",letterSpacing:".1em",textTransform:"uppercase",marginBottom:7}}>Additional Charges</div>
+                      {myDiscount>0 && <FeeRow icon="🏷️" label="Discount" amt={myDiscount} negative color="#111111" badgeColor="#11111155" badgeBg="#11111110" badge={discount.mode==="per_item"?"proportional":"equal"} />}
                       {myPpn>0 && <FeeRow icon="🧾" label={`Tax ${ppn.unit==="rp"?fRp(ppn.rate):`${ppn.rate}%`}`} amt={myPpn} badge={ppn.mode==="per_item"?"proportional":"equal"} />}
                       {myOngkir>0 && <FeeRow icon="🚚" label={`Delivery Fee (÷${people.length})`} amt={myOngkir} />}
                       {myExtras.map((ex,ei)=>(
@@ -997,15 +993,15 @@ export default function SplitBilled() {
           </div>
 
           <div style={{display:"flex",gap:9,marginBottom:12}}>
-            <button onClick={()=>setActiveTab("items")} style={{flex:1,padding:"11px",background:"#161525",border:"1.5px solid #252440",borderRadius:11,color:"#6a6a8a",fontSize:13,cursor:"pointer"}}>← Edit</button>
-            <button onClick={handleShare} style={{flex:2,padding:"11px",background:"linear-gradient(135deg,#6C5CE7,#a29bfe)",border:"none",borderRadius:11,color:"#fff",fontSize:13,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            <button onClick={()=>setActiveTab("items")} style={{flex:1,padding:"11px",background:"#ffffff",border:"1.5px solid #dcdcd8",borderRadius:11,color:"#767672",fontSize:13,cursor:"pointer"}}>← Edit</button>
+            <button onClick={handleShare} style={{flex:2,padding:"11px",background:"#111111",border:"none",borderRadius:11,color:"#fff",fontSize:13,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
               📤 Share as Image
             </button>
           </div>
           <div style={{textAlign:"center",paddingBottom:4}}>
-            <span style={{fontSize:11,color:"#2a2a42"}}>created by </span>
-            <span style={{fontSize:11,color:"#3a3a58",fontFamily:"'Space Grotesk',sans-serif",fontWeight:600,letterSpacing:"0.02em"}}>dotterspace</span>
-            <span style={{fontSize:11,color:"#2a2a42"}}> ✦</span>
+            <span style={{fontSize:11,color:"#c2c2be"}}>created by </span>
+            <span style={{fontSize:11,color:"#c2c2be",fontFamily:"'Space Grotesk',sans-serif",fontWeight:600,letterSpacing:"0.02em"}}>dotterspace</span>
+            <span style={{fontSize:11,color:"#c2c2be"}}> ✦</span>
           </div>
         </>)}
       </div>
