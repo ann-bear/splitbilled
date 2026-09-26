@@ -1,5 +1,9 @@
+const ALLOWED_ORIGIN = 'https://splitbilled.vercel.app'; // update this if your deployed domain differs
+const MAX_BODY_BYTES = 6 * 1024 * 1024; // ~6MB, generous for a base64 receipt photo
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  res.setHeader('Access-Control-Allow-Origin', origin === ALLOWED_ORIGIN ? origin : ALLOWED_ORIGIN);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -7,6 +11,15 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
+
+  // Reject empty or oversized payloads before spending any Gemini quota on them
+  if (!req.body || typeof req.body !== 'object' || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ error: 'Empty request body' });
+  }
+  const bodySize = Buffer.byteLength(JSON.stringify(req.body));
+  if (bodySize > MAX_BODY_BYTES) {
+    return res.status(413).json({ error: 'Request body too large' });
+  }
 
   try {
     const response = await fetch(
