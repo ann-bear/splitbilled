@@ -36,7 +36,7 @@ async function compressImage(blob) {
         r.readAsDataURL(b);
       }, "image/jpeg", 0.75);
     };
-    img.onerror = rej;
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("Couldn't read that image — try a different photo or format.")); };
     img.src = url;
   });
 }
@@ -383,6 +383,7 @@ export default function SplitBilled() {
   const [capturedImg,setCapturedImg]=useState(null);
   const videoRef=useRef(null);
   const canvasRef=useRef(null);
+  const galleryInputRef=useRef(null);
 
   // Share modal — per person pages
   const [sharePages,setSharePages]=useState([]); // array of dataURLs
@@ -410,6 +411,21 @@ export default function SplitBilled() {
     setStream(null); setShowScan(false); setScanPhase("preview"); setCapturedImg(null); setScanErr("");
   };
 
+  // Shared tail for both the camera-capture and gallery-upload paths.
+  // compressImage() re-draws the image onto a <canvas> before re-exporting it as a
+  // new JPEG — that round-trip strips EXIF (GPS, camera model, timestamp, etc.)
+  // automatically, so no separate "remove metadata" step is needed for either path.
+  const processImageBlob=async(blob)=>{
+    setScanPhase("processing"); setScanErr("");
+    try {
+      const b64=await compressImage(blob);
+      setCapturedImg(`data:image/jpeg;base64,${b64}`);
+      const parsed=await callGemini(b64);
+      applyParsed(parsed);
+      setScanPhase("done");
+    } catch(e) { setScanErr("Failed to read receipt: "+(e.message||"please try again")); setScanPhase("error"); }
+  };
+
   const captureAndScan=async()=>{
     const video=videoRef.current;
     if (!video) return;
@@ -417,15 +433,20 @@ export default function SplitBilled() {
     c.width=video.videoWidth; c.height=video.videoHeight;
     c.getContext("2d").drawImage(video,0,0);
     if (stream) stream.getTracks().forEach(t=>t.stop()); setStream(null);
-    setScanPhase("processing");
-    try {
-      const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.9));
-      const b64=await compressImage(blob);
-      setCapturedImg(`data:image/jpeg;base64,${b64}`);
-      const parsed=await callGemini(b64);
-      applyParsed(parsed);
-      setScanPhase("done");
-    } catch(e) { setScanErr("Failed to read receipt: "+(e.message||"please try again")); setScanPhase("error"); }
+    const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.9));
+    processImageBlob(blob);
+  };
+
+  const handleGalleryPick=(e)=>{
+    const file=e.target.files?.[0];
+    e.target.value=""; // reset so picking the same file again still fires onChange
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setScanErr("That file isn't an image. Please pick a photo of your receipt."); setScanPhase("error");
+      return;
+    }
+    if (stream) { stream.getTracks().forEach(t=>t.stop()); setStream(null); }
+    processImageBlob(file); // File is a Blob — compressImage() takes it directly
   };
 
   const applyParsed=(s)=>{
@@ -603,10 +624,16 @@ export default function SplitBilled() {
                 background:"linear-gradient(to bottom,transparent 60%,rgba(0,0,0,.5) 100%)"}} />
               <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"20px 20px 40px",display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
                 <span style={{fontSize:11,color:"rgba(255,255,255,0.5)",textAlign:"center"}}>Point the camera at the entire receipt, then tap Scan.</span>
-                <button onClick={captureAndScan}
-                  style={{width:"100%",maxWidth:360,padding:"16px",background:"#fff",border:"none",borderRadius:14,color:"#111111",fontSize:16,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 24px rgba(0,0,0,.4)"}}>
-                  <span style={{fontSize:22}}>📸</span> Scan Now
-                </button>
+                <div style={{display:"flex",alignItems:"center",gap:10,width:"100%",maxWidth:360}}>
+                  <button onClick={captureAndScan}
+                    style={{flex:1,padding:"16px",background:"#fff",border:"none",borderRadius:14,color:"#111111",fontSize:16,fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 24px rgba(0,0,0,.4)"}}>
+                    <span style={{fontSize:22}}>📸</span> Scan Now
+                  </button>
+                  <button onClick={()=>galleryInputRef.current?.click()} title="Upload from gallery"
+                    style={{width:54,height:54,flexShrink:0,background:"rgba(255,255,255,0.15)",border:"1.5px solid rgba(255,255,255,0.3)",borderRadius:14,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(6px)"}}>
+                    🖼️
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -643,6 +670,10 @@ export default function SplitBilled() {
               <div style={{padding:"13px 16px",background:"rgba(255,107,107,0.1)",border:"1px solid #11111144",borderRadius:12,fontSize:12,color:"#333333",lineHeight:1.6}}>
                 ⚠️ {scanErr}
               </div>
+              <button onClick={()=>galleryInputRef.current?.click()}
+                style={{width:"100%",padding:"13px",background:"#fff",border:"none",borderRadius:12,color:"#111111",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                🖼️ Upload from gallery instead
+              </button>
               <button onClick={()=>{setCapturedImg(null);setShowScan(false);setTimeout(()=>setShowScan(true),100);}}
                 style={{width:"100%",padding:"13px",background:"#dcdcd8",border:"none",borderRadius:12,color:"#4a4a46",fontSize:13,cursor:"pointer"}}>
                 Try Again
@@ -655,6 +686,7 @@ export default function SplitBilled() {
           )}
 
           <canvas ref={canvasRef} style={{display:"none"}}/>
+          <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleGalleryPick} style={{display:"none"}}/>
         </div>
       )}
 
